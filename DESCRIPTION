@@ -1,0 +1,27 @@
+Package: shellgame
+Title: The Shell Game - Audit Geographic Data Transformations
+Version: 0.1.0
+Authors@R: person("Phinn", "Markson", 
+    email = "phinn.markson@example.com", 
+    role = c("aut", "cre"))
+Description: Reveals how data quality silently degrades during geographic 
+    transformations while variable labels remain unchanged. Demonstrates that
+    transformation error is agnostic to both the variable (population, income,
+    etc.) and the tool (R, Python, etc.). Provides reproducible audit framework
+    for quantifying the shift from observed to imputed data at each 
+    transformation hop.
+License: MIT + file LICENSE
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends: R (>= 4.0.0)
+Imports: dplyr (>= 1.0.0), stringr, ggplot2, tidycensus,
+        janitor,  magrittr, rlang
+Suggests: knitr, rmarkdown, testthat (>= 3.0.0), zctaCrosswalk, tidyr, sf, readr 
+VignetteBuilder: knitr
+URL: https://github.com/phinnmarkson/shellgame
+BugReports: https://github.com/phinnmarkson/shellgame/issues
+NeedsCompilation: no
+Packaged: 2026-01-24 19:30:25 UTC; phinnmarkson
+Author: Phinn Markson [aut, cre]
+Maintainer: Phinn Markson <phinn.markson@example.com>

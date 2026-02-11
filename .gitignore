@@ -1,0 +1,14 @@
+# scratch / drafts
+_scratch/
+_archive/
+_archive_copies/
+
+# R build artifacts
+.Rhistory
+.RData
+.Rproj.user/
+inst/doc/
+*.html
+
+# OS junk
+.DS_Store
