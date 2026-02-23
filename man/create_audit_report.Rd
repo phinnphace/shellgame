@@ -12,7 +12,7 @@ create_audit_report(
 )
 }
 \arguments{
-\item{audit_result}{A shellgame_audit object}
+\item{audit_result}{An audit_result object produced by geoDeltaAudit::audit_transform()}
 
 \item{zcta_baseline_sf}{Optional: SF object with baseline ZCTAs}
 

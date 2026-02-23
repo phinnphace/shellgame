@@ -1,25 +1,32 @@
 ---
-title: "Hennepin County Example"
+title: "Hennepin example"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Hennepin County Example}
+  %\VignetteIndexEntry{Hennepin example}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
 
-```{r, include = FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>",
-  fig.width = 7,
-  fig.height = 5
+  eval = FALSE,
+  message = FALSE,
+  warning = FALSE,
+  error = FALSE
 )
 ```
 
-```{r setup}
+```{r libs}
 library(shellgame)
+library(geoDeltaAudit)
 library(dplyr)
-library(ggplot2)
+library(stringr)
+library(janitor)
+
+# vignette-only dependency; keep in Suggests
+if (!requireNamespace("readr", quietly = TRUE)) {
+  stop("Package 'readr' is required to run this vignette. Install it with install.packages('readr').")
+}
 ```
 
 # Introduction
@@ -37,82 +44,45 @@ And reveal the shell game: same column name ("population"), different underlying
 For this example, we'll use the data you would typically prepare:
 
 ```{r eval=FALSE}
-# Load crosswalks
-zip_zcta_path <- system.file("extdata", "ZiptoZCTA-Table 1.csv", package = "shellgame")
-if (zip_zcta_path == "") {
+acs_path <- system.file("extdata", "toy_acs_zcta_hennepin.csv", package = "geoDeltaAudit")
+hud_path <- system.file("extdata", "toy_zip_county_hud_hennepin.csv", package = "geoDeltaAudit")
 
-  zip_zcta_path <- file.path("..", "inst", "extdata", "ZiptoZCTA-Table 1.csv")
-}
+stopifnot(nchar(acs_path) > 0, nchar(hud_path) > 0)
 
-hud_path <- system.file("extdata", "HUD_ZIP_COUNTY.csv", package = "shellgame")
-if (hud_path == "") {
-  hud_path <- file.path("..", "inst", "extdata", "HUD_ZIP_COUNTY.csv")
-}
+acs <- readr::read_csv(acs_path, show_col_types = FALSE) |>
+  janitor::clean_names() |>
+  dplyr::mutate(zcta = stringr::str_pad(as.character(.data$zcta), 5, pad = "0"))
 
-zip_zcta_raw <- read.csv(zip_zcta_path)
-hud_raw      <- read.csv(hud_path)
-# Get baseline population data from ACS
-# First, set your Census API key
-tidycensus::census_api_key("YOUR_KEY_HERE", install = TRUE, overwrite = TRUE)
+hud <- readr::read_csv(hud_path, show_col_types = FALSE) |>
+  janitor::clean_names()
 
-# Get ZCTAs for Hennepin County
-library(zctaCrosswalk)
-zctas_hennepin <- get_zctas_by_county("27053")
+# Toy assoc: 1:1 ZCTA -> ZIP so the example always runs
+assoc <- acs |>
+  dplyr::distinct(.data$zcta) |>
+  dplyr::transmute(zcta = .data$zcta, zip = .data$zcta) |>
+  dplyr::distinct()
 
-# Fetch population data
-acs_data <- get_zcta_baseline(
-  variable = "B01001_001", # Total population
-  year = 2022,
-  zctas = zctas_hennepin
-)
-
-```
-# Get baseline population data from ACS
-# First, set your Census API key
-tidycensus::census_api_key("YOUR_KEY_HERE", install = TRUE, overwrite = TRUE)
-
-# Get ZCTAs for Hennepin County
-library(zctaCrosswalk)
-zctas_hennepin <- get_zctas_by_county("27053")
-
-# Fetch population data
-acs_data <- get_zcta_baseline(
-  variable = "B01001_001", # Total population
-  year = 2022,
-  zctas = zctas_hennepin
-)
-```
-```{r load-toy-data}
-# For this demo vignette, we use toy data instead of live Census API calls
-acs_path <- system.file("extdata", "toy_acs_zcta_hennepin.csv", package = "shellgame")
-if (acs_path == "") {
-  acs_path <- file.path("..", "inst", "extdata", "toy_acs_zcta_hennepin.csv")
-}
-acs_data <- read.csv(acs_path)
-```
-# Get ZCTAs for Hennepin County
-library(zctaCrosswalk)
-zctas_hennepin <- get_zctas_by_county("27053")
-
-# Fetch population data
-acs_data <- get_zcta_baseline(
-  variable = "B01001_001", # Total population
-  year = 2022,
-  zctas = zctas_hennepin
-  print(paste("Chunk WD:", getwd()))
+list(
+  acs_rows = nrow(acs),
+  assoc_rows = nrow(assoc),
+  hud_rows = nrow(hud)
 )
 ```
 
 ## Step 2: Run the Audit
 
-```{r eval=FALSE}
-result <- audit_transformation(
-  baseline_data = acs_data,
-  zip_zcta_map = zip_zcta,
-  hud_crosswalk = hud,
-  county_fips = "27053",
-  variable_name = "population",
-  value_col = "estimate"
+```{r run-audit, eval=FALSE, echo=TRUE}
+# example only (not executed during vignette build)
+steps <- list(
+  geoDeltaAudit::step_zcta_to_zip_equal(assoc),
+  geoDeltaAudit::step_zip_to_county_totratio(hud = hud)
+)
+
+out <- geoDeltaAudit::audit_transform(
+  df = acs,
+  geo_col = "zcta",
+  var_col = "pop",
+  steps = steps
 )
 ```
 
@@ -120,10 +90,15 @@ result <- audit_transformation(
 
 ```{r eval=FALSE}
 # Print summary
-summary(result)
+summary(out)
 ```
+## Membership Visualization
 
-**Output:**
+```{r figures, echo=FALSE, eval=TRUE}
+knitr::include_graphics(c(
+  "baseline_hennepin.png",
+  "hennepin_relationship.png"
+))
 ```
 === The Shell Game: Transformation Audit ===
 
@@ -157,17 +132,15 @@ Target County: 27053
   27171: 14,391
   27059: 9,526
 ```
-
-# The Results
-
 ## Baseline: 74 ZCTAs
-
-![Baseline ZCTAs](ZCTAcolored.png)
 
 The analysis begins with 74 ZCTAs that have a relationship-based membership with Hennepin County. These are the ZCTAs used by the Census Bureau in ACS tabulations.
 
 **Total population: 1,391,557** (directly observed from ACS)
 
+```{r baseline-fig, echo=FALSE, eval=TRUE}
+knitr::include_graphics("baseline_hennepin.png")
+```
 ## The First Hop: ZCTA → ZIP
 
 When we associate these 74 ZCTAs with ZIP codes:
@@ -198,28 +171,41 @@ extract_lost_population(result, top_n = 5)
 
 # Geometric vs Relationship Membership
 
-![Geometric vs Relationship](HennepinGEOintersection.png)
 
 If we used geometric intersection instead of relationship-based membership, we would have 94 ZCTAs, not 74.
 
 **This is Decision #1**: How do we define membership?
 
 The 20 extra ZCTAs (shown in grey) intersect the county boundary geometrically but are not included in the relationship-based membership used by ACS.
-
 # Visualizing the Difference
 
-![ZCTA Baseline](HennepinZCTABaselin.png)
+```{r baseline-membership, echo=FALSE, eval=TRUE}
+knitr::include_graphics("baseline_hennepin.png")
+```
 
 The baseline: 74 ZCTAs with relationship-based membership.
-
-![ZCTA Difference](HennepinZCTAdifference.png)
+```{r geometric-membership, echo=FALSE, eval=TRUE}
+knitr::include_graphics("hennepin_relationship.png")
+```
 
 The difference: Grey areas show ZCTAs that appear only under geometric intersection.
+
 
 # The Shell Game Revealed
 
 ```{r eval=FALSE}
-plot_transformation_loss(result)
+# Normalize expected fields from geoDeltaAudit::audit_transform()
+baseline_total <- as.numeric(audit_result$baseline_total)
+final_total <- as.numeric(audit_result$final_total)
+
+# delta is already provided; compute if missing
+delta <- if (!is.null(audit_result$delta)) {
+  as.numeric(audit_result$delta)
+} else {
+  final_total - baseline_total
+}
+
+absolute_loss <- abs(delta)
 ```
 
 Same column name: "population"  

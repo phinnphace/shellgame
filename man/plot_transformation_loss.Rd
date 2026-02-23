@@ -2,16 +2,19 @@
 % Please edit documentation in R/visualization.R
 \name{plot_transformation_loss}
 \alias{plot_transformation_loss}
-\title{Plot transformation loss}
+\title{Plot baseline vs transformed totals}
 \usage{
-plot_transformation_loss(audit_result)
+plot_transformation_loss(audit_result, y_label = "Total (count)")
 }
 \arguments{
-\item{audit_result}{A shellgame_audit object}
+\item{audit_result}{An audit_result object produced by geoDeltaAudit::audit_transform()}
+
+\item{y_label}{Character. Label for y-axis (e.g., "Total population (persons)")}
 }
 \value{
 A ggplot2 object
 }
 \description{
-Creates a simple bar chart showing baseline vs recovered values.
+Simple comparison chart for a geoDeltaAudit::audit_transform() result.
+No inference, no labels on bars.
 }

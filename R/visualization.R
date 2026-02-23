@@ -72,57 +72,45 @@ plot_geometric_vs_relationship <- function(zcta_baseline_sf, zcta_geometric_sf,
         )
 }
 
-#' Plot transformation loss
+#' Plot baseline vs transformed totals
 #'
-#' Creates a simple bar chart showing baseline vs recovered values.
+#' Simple comparison chart for a geoDeltaAudit::audit_transform() result.
+#' No inference, no labels on bars.
 #'
-#' @param audit_result A shellgame_audit object
+#' @param audit_result An audit_result object produced by geoDeltaAudit::audit_transform()
+#' @param y_label Character. Label for y-axis (e.g., "Total population (persons)")
 #' @return A ggplot2 object
 #' @export
-plot_transformation_loss <- function(audit_result) {
-    plot_data <- data.frame(
-        stage = c("Baseline\\n(Observed)", "After Transformation\\n(Imputed)"),
-        value = c(audit_result$baseline_total, audit_result$recovered_total),
-        type = c("Observed", "Imputed")
+plot_transformation_loss <- function(audit_result, y_label = "Total (count)") {
+  
+  baseline_total <- as.numeric(audit_result$baseline_total)
+  final_total    <- as.numeric(audit_result$final_total)
+  
+  plot_data <- data.frame(
+    stage = factor(c("Observed", "After transform"), levels = c("Observed", "After transform")),
+    value = c(baseline_total, final_total),
+    stringsAsFactors = FALSE
+  )
+  
+  ggplot2::ggplot(plot_data, ggplot2::aes(x = stage, y = value)) +
+    ggplot2::geom_col() +
+    ggplot2::theme_minimal() +
+    ggplot2::scale_y_continuous(labels = function(x) format(x, big.mark = ",", scientific = FALSE)) +
+    ggplot2::labs(
+      title = "Baseline vs After Transformation",
+      x = NULL,
+      y = y_label
+    ) +
+    ggplot2::theme(
+      plot.title.position = "plot",
+      plot.title = ggplot2::element_text(margin = ggplot2::margin(b = 8))
     )
-
-    ggplot2::ggplot(plot_data, ggplot2::aes(x = stage, y = value, fill = type)) +
-        ggplot2::geom_col() +
-        ggplot2::geom_text(
-            ggplot2::aes(label = format(round(value), big.mark = ",")),
-            vjust = -0.5
-        ) +
-        ggplot2::scale_fill_manual(
-            values = c("Observed" = "#4CAF50", "Imputed" = "#FF9800")
-        ) +
-        ggplot2::theme_minimal() +
-        ggplot2::labs(
-            title = "The Shell Game",
-            subtitle = sprintf(
-                "%s: Loss of %s (%.1f%%)",
-                audit_result$variable_name,
-                format(round(abs(audit_result$absolute_loss)), big.mark = ","),
-                abs(audit_result$percent_loss)
-            ),
-            x = NULL,
-            y = audit_result$variable_name,
-            fill = "Data Type",
-            caption = "Same column name. Different underlying quantity."
-        ) +
-        ggplot2::theme(
-            legend.position = "bottom",
-            plot.title.position = "plot",
-            plot.title = ggplot2::element_text(margin = ggplot2::margin(b = 5)),
-            plot.subtitle = ggplot2::element_text(margin = ggplot2::margin(b = 10)),
-            plot.caption = ggplot2::element_text(margin = ggplot2::margin(t = 10))
-        )
 }
-
 #' Create complete audit report
 #'
 #' Generates all visualizations for an audit.
 #'
-#' @param audit_result A shellgame_audit object
+#' @param audit_result An audit_result object produced by geoDeltaAudit::audit_transform()
 #' @param zcta_baseline_sf Optional: SF object with baseline ZCTAs
 #' @param zcta_geometric_sf Optional: SF object with geometric ZCTAs
 #' @param county_sf Optional: SF object with county boundary
@@ -130,22 +118,19 @@ plot_transformation_loss <- function(audit_result) {
 #' @export
 create_audit_report <- function(audit_result, zcta_baseline_sf = NULL,
                                 zcta_geometric_sf = NULL, county_sf = NULL) {
-    plots <- list()
-
-    # Always create the loss plot
-    plots$loss <- plot_transformation_loss(audit_result)
-
-    # Create spatial plots if geometries provided
-    if (!is.null(zcta_baseline_sf) && !is.null(county_sf)) {
-        plots$baseline <- plot_baseline_zctas(zcta_baseline_sf, county_sf)
-    }
-
-    if (!is.null(zcta_baseline_sf) && !is.null(zcta_geometric_sf) && !is.null(county_sf)) {
-        plots$membership <- plot_geometric_vs_relationship(
-            zcta_baseline_sf, zcta_geometric_sf, county_sf
-        )
-    }
-
-    plots
+  plots <- list()
+  
+  plots$loss <- plot_transformation_loss(audit_result)
+  
+  if (!is.null(zcta_baseline_sf) && !is.null(county_sf)) {
+    plots$baseline <- plot_baseline_zctas(zcta_baseline_sf, county_sf)
+  }
+  
+  if (!is.null(zcta_baseline_sf) && !is.null(zcta_geometric_sf) && !is.null(county_sf)) {
+    plots$membership <- plot_geometric_vs_relationship(
+      zcta_baseline_sf, zcta_geometric_sf, county_sf
+    )
+  }
+  
+  plots
 }
-

@@ -8,6 +8,10 @@ _archive_copies/
 .RData
 .Rproj.user/
 inst/doc/
+doc/
+build/
+vignettes/*.html
+vignettes/*.R
 *.html
 
 # OS junk
