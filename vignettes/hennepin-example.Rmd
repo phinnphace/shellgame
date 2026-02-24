@@ -100,7 +100,10 @@ knitr::include_graphics(c(
   "hennepin_relationship.png"
 ))
 ```
+
+```text
 === The Shell Game: Transformation Audit ===
+
 
 Variable: population 
 Target County: 27053 
