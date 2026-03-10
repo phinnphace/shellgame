@@ -90,6 +90,8 @@ summary(out)
 ```
 ## Membership Visualization
 
+*Note: The following graphics are pre-rendered from the configured Hennepin County example dataset to illustrate the spatial relationships being audited.*
+
 ```{r figures, echo=FALSE, eval=TRUE}
 knitr::include_graphics(c(
   "baseline_hennepin.png",
