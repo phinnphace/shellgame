@@ -17,7 +17,7 @@ RoxygenNote: 7.3.3
 Depends: R (>= 4.0.0)
 Imports: dplyr (>= 1.0.0), stringr, ggplot2,
         janitor,  magrittr, rlang
-Suggests: knitr, rmarkdown, testthat (>= 3.0.0), zctaCrosswalk, tidyr, sf, readr 
+Suggests: knitr, rmarkdown, testthat (>= 3.0.0), zctaCrosswalk, tidyr, sf, readr, tidycensus
 VignetteBuilder: knitr
 URL: https://github.com/phinnmarkson/shellgame
 BugReports: https://github.com/phinnmarkson/shellgame/issues
