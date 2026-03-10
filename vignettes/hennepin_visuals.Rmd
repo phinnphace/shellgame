@@ -8,8 +8,11 @@ vignette: >
 ---
 
 ```{r setup, include=FALSE}
+# Only evaluate chunks if sf is available to avoid breaking installation when it's just a 'Suggests'
+has_sf <- requireNamespace("sf", quietly = TRUE)
 knitr::opts_chunk$set(
     echo = TRUE,
+    eval = has_sf,
     fig.width = 7,
     fig.height = 5,
     dpi = 300,
@@ -17,7 +20,7 @@ knitr::opts_chunk$set(
     out.width = "100%"
 )
 
-library(sf)
+if(has_sf) library(sf)
 library(dplyr)
 library(ggplot2)
 library(stringr)
