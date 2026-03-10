@@ -125,7 +125,7 @@ print(p2)
 
 Save the plots as PNG files for use in documentation.
 
-```{r save-pngs, eval=TRUE, include=FALSE}
+```{r save-pngs, include=FALSE}
 dir.create("man/figures", showWarnings = FALSE, recursive = TRUE)
 
 ggsave("man/figures/ZCTA_Membership.png", plot = p1, width = 7, height = 5, dpi = 300)
