@@ -155,7 +155,7 @@ result <- audit_transformation(
 
 # 5. View results
 summary(result)
-plot_transformation_loss(result)
+plot_transformation_perturbation(result)
 ```
 
 # Data Structure Requirements

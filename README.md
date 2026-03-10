@@ -39,7 +39,7 @@ result <- audit_transformation(
 summary(result)
 #> Baseline: 1,391,557 (74 ZCTAs, observed from ACS)
 #> After transformation: 1,216,874 (recovered via HUD TOT_RATIO)
-#> Loss: 174,683 (-12.6%)
+#> Perturbation: 174,683 (-12.6%)
 #>
 #> The shell game: Same column name, different underlying quantity.
 ```
@@ -59,10 +59,10 @@ summary(result)
 
 ```r
 # Visualize the transformation
-plot_transformation_loss(result)
+plot_transformation_perturbation(result)
 ```
 
-![Hennepin County transformation loss](man/figures/hennepin_loss.png)
+![Hennepin County transformation perturbation](man/figures/hennepin_loss.png)
 
 ## Key Features
 

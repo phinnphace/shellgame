@@ -32,7 +32,7 @@ If this were just geometric mismatch, we would have:
 
 - rounding error
 - boundary error
-- aggregation loss
+- aggregation perturbation
 
 But because the estimate silently shifts, what we're actually doing is:
 
@@ -117,7 +117,7 @@ For Hennepin County, Minnesota:
 
 - **Baseline**: 1,391,557 (74 ZCTAs, directly observed from ACS)
 - **After ZCTA→ZIP→County**: 1,216,874 (recovered via HUD TOT_RATIO)
-- **Loss**: 174,683 people (-12.6%)
+- **Perturbation**: 174,683 people (-12.6%)
 
 ## Why This Is Agnostic
 

@@ -81,7 +81,7 @@ plot_geometric_vs_relationship <- function(zcta_baseline_sf, zcta_geometric_sf,
 #' @param y_label Character. Label for y-axis (e.g., "Total population (persons)")
 #' @return A ggplot2 object
 #' @export
-plot_transformation_loss <- function(audit_result, y_label = "Total (count)") {
+plot_transformation_perturbation <- function(audit_result, y_label = "Total (count)") {
   
   baseline_total <- as.numeric(audit_result$baseline_total)
   final_total    <- as.numeric(audit_result$final_total)
@@ -120,7 +120,7 @@ create_audit_report <- function(audit_result, zcta_baseline_sf = NULL,
                                 zcta_geometric_sf = NULL, county_sf = NULL) {
   plots <- list()
   
-  plots$loss <- plot_transformation_loss(audit_result)
+  plots$perturbation <- plot_transformation_perturbation(audit_result)
   
   if (!is.null(zcta_baseline_sf) && !is.null(county_sf)) {
     plots$baseline <- plot_baseline_zctas(zcta_baseline_sf, county_sf)

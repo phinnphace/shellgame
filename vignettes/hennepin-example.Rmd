@@ -73,16 +73,12 @@ list(
 
 ```{r run-audit, eval=FALSE, echo=TRUE}
 # example only (not executed during vignette build)
-steps <- list(
-  geoDeltaAudit::step_zcta_to_zip_equal(assoc),
-  geoDeltaAudit::step_zip_to_county_totratio(hud = hud)
-)
-
-out <- geoDeltaAudit::audit_transform(
-  df = acs,
+result <- shellgame::evaluate_transformation(
+  data = acs,
+  zip_zcta_map = assoc,
+  hud_crosswalk = hud,
   geo_col = "zcta",
-  var_col = "pop",
-  steps = steps
+  var_col = "pop"
 )
 ```
 
@@ -117,7 +113,7 @@ Target County: 27053
   Recovered: 1,216,874 
 
 --- The Shell Game Result ---
-  Loss: -174,683 (-12.6%)
+  Perturbation: -174,683 (-12.6%)
 
   Same column name.
   Different underlying quantity.
@@ -128,7 +124,7 @@ Target County: 27053
   This happens BEFORE any allocation or weighting.
   The analytical surface has already shifted.
 
---- Top Counties Receiving Lost Population ---
+--- Top Counties Receiving Perturbed Population ---
   27003: 30,535
   27139: 25,268
   27123: 21,835
@@ -162,14 +158,14 @@ Using HUD's TOT_RATIO, we allocate ZIP-level population to counties.
 
 **Result: Population recovered for Hennepin County: 1,216,874**
 
-## The Loss
+## The Perturbation
 
 **174,683 people (-12.6%) disappeared in the transformation.**
 
 Where did they go? To neighboring counties:
 
 ```{r eval=FALSE}
-extract_lost_population(result, top_n = 5)
+extract_perturbed_population(result, top_n = 5)
 ```
 
 # Geometric vs Relationship Membership
@@ -208,7 +204,7 @@ delta <- if (!is.null(audit_result$delta)) {
   final_total - baseline_total
 }
 
-absolute_loss <- abs(delta)
+absolute_perturbation <- abs(delta)
 ```
 
 Same column name: "population"  

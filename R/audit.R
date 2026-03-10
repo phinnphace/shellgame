@@ -41,9 +41,9 @@ audit_transformation <- function(baseline_data, zip_zcta_map, hud_crosswalk,
     # Calculate recovered total
     recovered_total <- sum(transformed$county_level$value, na.rm = TRUE)
 
-    # Calculate loss
-    absolute_loss <- recovered_total - baseline_total
-    percent_loss <- 100 * absolute_loss / baseline_total
+    # Calculate perturbation
+    absolute_perturbation <- recovered_total - baseline_total
+    percent_perturbation <- 100 * absolute_perturbation / baseline_total
 
     # Count units at each stage
     n_zips <- nrow(transformed$zip_level)
@@ -51,8 +51,8 @@ audit_transformation <- function(baseline_data, zip_zcta_map, hud_crosswalk,
     # Calculate pre-allocation expansion
     pre_alloc_expansion <- (n_zips - baseline_n_units) / baseline_n_units * 100
 
-    # Identify where population was lost
-    lost_pop <- transformed$county_level %>%
+    # Identify where population was perturbed
+    perturbed_pop <- transformed$county_level %>%
         dplyr::filter(county != county_fips) %>%
         dplyr::arrange(dplyr::desc(value))
 
@@ -62,8 +62,8 @@ audit_transformation <- function(baseline_data, zip_zcta_map, hud_crosswalk,
         baseline_total = baseline_total,
         baseline_n_units = baseline_n_units,
         recovered_total = recovered_total,
-        absolute_loss = absolute_loss,
-        percent_loss = percent_loss,
+        absolute_perturbation = absolute_perturbation,
+        percent_perturbation = percent_perturbation,
 
         # Transformation details
         n_zips = n_zips,
@@ -73,7 +73,7 @@ audit_transformation <- function(baseline_data, zip_zcta_map, hud_crosswalk,
         baseline_data = baseline_data,
         zip_level = transformed$zip_level,
         county_level = transformed$county_level,
-        lost_to_other_counties = lost_pop,
+        perturbed_to_other_counties = perturbed_pop,
 
         # Metadata
         county_fips = county_fips,
@@ -109,8 +109,8 @@ print.shellgame_audit <- function(x, ...) {
 
     cat("--- The Shell Game Result ---\\n")
     cat(
-        "  Loss:", format(round(x$absolute_loss), big.mark = ","),
-        sprintf("(%.1f%%)\\n", x$percent_loss)
+        "  Perturbation:", format(round(x$absolute_perturbation), big.mark = ","),
+        sprintf("(%.1f%%)\\n", x$percent_perturbation)
     )
     cat("\\n")
     cat("  Same column name.\\n")
@@ -138,14 +138,14 @@ summary.shellgame_audit <- function(object, ...) {
     cat("  This happens BEFORE any allocation or weighting.\\n")
     cat("  The analytical surface has already shifted.\\n\\n")
 
-    if (nrow(object$lost_to_other_counties) > 0) {
-        cat("--- Top Counties Receiving Lost Population ---\\n")
-      top_lost <- utils::head(object$lost_to_other_counties, 5)
-        for (i in seq_len(nrow(top_lost))) {
+    if (nrow(object$perturbed_to_other_counties) > 0) {
+        cat("--- Top Counties Receiving Perturbed Population ---\\n")
+      top_perturbed <- utils::head(object$perturbed_to_other_counties, 5)
+        for (i in seq_len(nrow(top_perturbed))) {
             cat(sprintf(
                 "  %s: %s\\n",
-                top_lost$county[i],
-                format(round(top_lost$value[i]), big.mark = ",")
+                top_perturbed$county[i],
+                format(round(top_perturbed$value[i]), big.mark = ",")
             ))
         }
     }
@@ -153,13 +153,13 @@ summary.shellgame_audit <- function(object, ...) {
     invisible(object)
 }
 
-#' Extract lost population details
+#' Extract perturbed population details
 #'
 #' @param audit_result A shellgame_audit object
 #' @param top_n Number of top counties to return (default: 10)
 #' @return Data frame of counties that received population from target county
 #' @export
-extract_lost_population <- function(audit_result, top_n = 10) {
-    audit_result$lost_to_other_counties %>%
+extract_perturbed_population <- function(audit_result, top_n = 10) {
+    audit_result$perturbed_to_other_counties %>%
     utils::head(top_n)
 }
