@@ -4,21 +4,35 @@
 
 ## Overview
 
-The `shellgame` package reveals how data quality silently degrades during geographic transformations while variable labels remain unchanged. Like a shell game where the ball gets swapped without anyone noticing, geographic transformations swap **observed data** for **imputed data** while keeping the same column name.
+Welcome to the `shellgame`. The shellgame package reveals how data quality silently degrades during geographic transformations while variable labels remain unchanged; this wrapper works with geoDeltaAudit. Just like a shell game where the ball(sample) gets moved around under identical containers (VAR), geographic transformations swap **observed data** for **imputed data** while keeping the same column name. 
+
+##  Why does this matter?
+We are no longer measuring the sample of interest but the imputed data from the crosswalk we chose. 
+
+## The crosswalk 
+Is built with assumptions about population distribution, time period, and allocation ratio making this instrument an active agent in the data. The crosswalk does indeed transform the data, through its assumptions and the result is no longer the original sample population but a new population treated as the original. The original population did not have these crosswalk assumptions about distribution, time period, and allocation ratio because it was an observation, and now it is an imputed data treated as the former. 
+
+##  shellgame 
+Provides a package for you to audit crosswalks to quantify the perturbation of data transformation through administrative boundaries and make an informed choice for your use case, and goals. A crosswalk designed for population allocation may be inappropriate for income, employment, or housing variables, yet analysts routinely apply the same crosswalk across diverse analytic contexts. The shellgame package is designed to forefront this rather than footnote our assumptions. The example case in the Vignette work_flow is Hennepin County, MN because in 2025/26 I want us to see what unexamined workflows look like with real people because data are people. 
 
 **The key insight**: This error is **agnostic** to:
 - **Variable**: Population, median income, vehicle ownership - doesn't matter
-- **Tool**: R, Python, Stata, ArcGIS - doesn't matter  
+- **Tool**: currently R (future goals: STATA, SAS, Python, etc)
 - **Geography**: Hennepin County or anywhere else - doesn't matter
 
-**What matters**: The transformation itself causes the error.
+**What matters**: The transformation and crosswalk deserve a closer look
+
+**A note on data and png's**
+All data is preloaded in this package and will "display" graphics. This choice was made for ease and simplicity for folks. Not everyone wants to run tidycensus. And if this year has taught folks anything, not all data is available. Even standard census data. Additionally, not everyone is comfortable or has access to a census API and I am a huge fan of lighter and easier because I need that too. The full data from U.S. Census and the HUD crosswalk, plus R script are in the `data-raw` folder if you are feeling froggy.
+  
+The variable selected for the example; TOT_POP is easily communicated to a wide audience and not relegated to professional data, or population science jockeys. 
 
 ## Installation
 
 ```r
 # Install from GitHub
-# install.packages("devtools")
-devtools::install_github("phinnmarkson/shellgame")
+# install.packages("remotes")
+remotes::install_github("phinnphace/shellgame")
 ```
 
 ## Quick Start
@@ -27,12 +41,12 @@ devtools::install_github("phinnmarkson/shellgame")
 library(shellgame)
 
 # Run audit on Hennepin County (example data included)
-result <- audit_transformation(
-  baseline_data = hennepin_zcta_baseline,
+result <- evaluate_transformation(
+  data = hennepin_zcta_baseline,
   zip_zcta_map = hennepin_zip_zcta_map,
   hud_crosswalk = hennepin_hud_crosswalk,
-  county_fips = "27053",
-  variable_name = "pop"
+  geo_col = "zcta",
+  var_col = "pop"
 )
 
 # View results
@@ -66,10 +80,10 @@ plot_transformation_perturbation(result)
 
 ## Key Features
 
-- **Reproducible audit framework** - Quantify error at each transformation hop
-- **Variable agnostic** - Works with any ACS variable
-- **Tool agnostic** - Demonstrates the transformation is the problem
-- **Publication-ready visualizations** - Maps and plots included
+- **Reproducible audit framework** - Quantify perturbation at each transformation hop
+- **Variable agnostic** - Works with any variable. If it is not the variable, perhaps the tools need a closer look? 
+- **Tool agnostic** - (Future goals. Currently only in R) 
+- **visualizations** - Maps and plots included
 - **Pre-loaded example** - Hennepin County data ready to use
 
 ## Learn More
