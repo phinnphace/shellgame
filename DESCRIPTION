@@ -2,7 +2,7 @@ Package: shellgame
 Title: The Shell Game - Audit Geographic Data Transformations
 Version: 0.1.0
 Authors@R: person("Phinn", "Markson", 
-    email = "phinn.markson@example.com", 
+    email = "markson.2@osu.edu", 
     role = c("aut", "cre"))
 Description: Reveals how data quality silently degrades during geographic 
     transformations while variable labels remain unchanged. Demonstrates that
@@ -16,12 +16,12 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Depends: R (>= 4.0.0)
 Imports: dplyr (>= 1.0.0), stringr, ggplot2,
-        janitor,  magrittr, rlang
+        janitor,  magrittr, rlang, geoDeltaAudit
 Suggests: knitr, rmarkdown, testthat (>= 3.0.0), zctaCrosswalk, tidyr, sf, readr, tidycensus
 VignetteBuilder: knitr
-URL: https://github.com/phinnmarkson/shellgame
-BugReports: https://github.com/phinnmarkson/shellgame/issues
+URL: https://github.com/phinnphace/shellgame
+BugReports: https://github.com/phinnphace/shellgame/issues
 NeedsCompilation: no
 Packaged: 2026-01-24 19:30:25 UTC; phinnmarkson
 Author: Phinn Markson [aut, cre]
-Maintainer: Phinn Markson <phinn.markson@example.com>
+Maintainer: Phinn Markson <markson.2@osu.edu>
