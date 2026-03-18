@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Shell Game | Audit Protocol</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script defer src="https://unpkg.com"></script>
+    <link href="https://fonts.googleapis.com" rel="stylesheet">
+    <style>
+        body { font-family: 'JetBrains Mono', monospace; }
+    </style>
+</head>
+<body class="bg-stone-50 text-stone-900 selection:bg-stone-900 selection:text-white">
+
+    <section class="min-h-screen flex flex-col justify-center items-center p-6 md:p-12">
+        <!-- Lab Report Header -->
+        <div class="mb-12 border border-stone-900 px-4 py-1 text-[10px] uppercase tracking-[0.2em] font-bold">
+            Protocol 01 // Shellgame // ΔX Audit
+        </div>
+
+        <!-- The Headline -->
+        <h1 class="max-w-5xl text-4xl md:text-6xl font-bold leading-[1.1] text-center mb-20 tracking-tighter">
+            "The greatest trick <span class="bg-stone-900 text-white px-2">allocation</span> ever pulled was convincing everyone it was <span class="underline decoration-dotted underline-offset-8">observation</span>."
+        </h1>
+
+        <!-- The Image Reveal (No React needed, uses Alpine.js) -->
+        <div x-data="{ hovered: false }" 
+             class="relative w-full max-w-4xl aspect-video border-2 border-stone-900 bg-stone-200 overflow-hidden cursor-crosshair shadow-2xl"
+             @mouseenter="hovered = true" 
+             @mouseleave="hovered = false">
+            
+            <!-- Standard View -->
+            <img src="legacy.png" 
+                 class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                 :class="hovered ? 'opacity-0' : 'opacity-100'">
+
+            <!-- The Reveal -->
+            <img src="perturbed.png" 
+                 class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                 :class="hovered ? 'opacity-100' : 'opacity-0'">
+
+            <!-- UI Overlay -->
+            <div class="absolute bottom-4 left-4 bg-white/90 border border-stone-900 px-3 py-1 text-[10px] font-bold tracking-widest uppercase">
+                Status: <span x-text="hovered ? 'Revealing ΔX Perturbation' : 'Standard Legacy View'"></span>
+            </div>
+        </div>
+
+        <p class="mt-8 text-[10px] uppercase tracking-widest text-stone-500">
+            [ Hover to expose the ghost in the machine ]
+        </p>
+    </section>
+
+</body>
+</html>
