@@ -191,4 +191,4 @@ The `prep_*` functions will validate your data and provide helpful error message
 # Next Steps
 
 - See `vignette("hennepin-example")` for a complete worked example
-- See `vignette("understanding-shell-game")` for the conceptual explanation
+- See `vignette("conceptual_framework_shellgame")` for the conceptual explanation
