@@ -1,0 +1,216 @@
+---
+title: "The Shell Game: Conceptual Framework"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{The Shell Game: Conceptual Framework}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>"
+)
+```
+
+## The Problem
+
+Geographic crosswalking is commonplace in population data workflows. It is often described as
+the harmonization of datasets across boundary systems. In practice, crosswalks allocate
+observations between administrative geographies, altering the analytic sample while preserving
+the variable name.
+
+Crosswalking is not harmonization. It is allocation.
+
+An observed quantity — population, cases, funding, rates — measured within boundary A is
+redistributed into boundary B using a weighting rule. That redistribution is a model. It encodes
+assumptions about proportionality, spatial distribution, and membership. It is not a new
+observation.
+
+The failure occurs when allocated outputs are treated as direct measurements.
+
+An estimated or observed aggregate becomes an allocated value under a new boundary. The
+workflow then proceeds as if that value were measured in the new geography, without
+acknowledging that the estimand has changed, the allocation introduces additional uncertainty,
+and the error structure is spatially patterned rather than random.
+
+Crosswalking converts measurement into imputation. Treating the result as measurement
+launders uncertainty.
+
+**That is the shell game.**
+
+---
+
+## Estimand Drift
+
+The underlying population does not change when boundaries change. What changes is the
+question being answered.
+
+"Population in ZIP 53704" is not the same statistical object as "population in ZCTA X," even if
+they overlap heavily. The mapping alters the estimand. The resulting value is conditional on the
+allocation rule. When that conditional quantity is treated as a direct observation, description is conflated with inference.
+
+This problem does not require regression modeling to matter.
+
+Descriptive statistics drive rankings, thresholds, and policy eligibility. When crosswalked values
+are treated as fixed and error-free, confidence is overstated, boundary-driven artifacts appear
+substantive, and threshold crossings may reflect allocation mechanics rather than population
+reality. Variance is not eliminated by administrative transformation. It is obscured.
+
+---
+
+## Structured Uncertainty
+
+Crosswalk error is not spatially uniform. It is largest where boundaries mismatch most: dense
+urban cores, fragmented jurisdictions, annexation seams, historically segregated geographies.
+These are frequently the same areas where marginalized populations reside.
+
+When allocation-induced perturbation is ignored, the communities most vulnerable to boundary
+distortion are also the ones most likely to experience mismeasurement. This is not random
+noise. It is structured uncertainty.
+
+Data plumbing is rarely audited. Analysts see valid code operating on numbers. What is not
+visible is that the numbers themselves embody structural assumptions about geography and
+proportionality. The shell game is not malicious. It is procedural. But once allocated values are
+treated as observed parameters, the workflow silently shifts from measurement to modeled
+estimation without acknowledging the transition.
+
+That shift deserves explicit diagnosis.
+
+---
+
+## The Two Hidden Decisions
+
+Every crosswalk workflow encodes at least two decisions that are typically left implicit.
+
+**Decision Point 1: Membership Definition.** Analysts must choose whether to define geographic
+membership by administrative linkage (relationship-based, as used in Census tabulations) or by
+geometric contact (spatial intersection). In Hennepin County, Minnesota, this choice affects
+whether 74 ZCTAs (relationship-based) or 94 ZCTAs (geometric intersection) constitute the
+baseline — before any transformation occurs.
+
+The relationship file reflects Census tabulation logic, not raw polygon contact. Geometric
+intersection performs a literal spatial test: if a ZCTA polygon touches the county boundary, it
+counts, including edge-touching, slivers, water boundaries, and TIGER topology artifacts. This
+decision alone alters the baseline by 27% before any crosswalk is applied.
+
+**Decision Point 2: Crosswalk Selection.** When allocating ZIP-level data to counties, analysts must
+select among allocation ratios. The HUD ZIP–County crosswalk provides TOT_RATIO (total
+addresses), RES_RATIO (residential addresses only), BUS_RATIO (business addresses), and
+OTH_RATIO (other addresses). Each ratio embodies different assumptions about how phenomena
+distribute across addresses — assumptions that may not hold uniformly across urban, suburban,
+and rural contexts.
+
+The analyst who selects TOT_RATIO assumes total addresses are a proxy for population
+distribution. The analyst who selects RES_RATIO assumes residential addresses are more
+appropriate. These are not technical details. They are methodological choices that affect
+results.
+
+---
+
+## Quantifying Perturbation
+
+The framework quantifies Δ*X*(VAR), defined as the change in an analytic variable induced
+solely by geographic transformation and allocation choices, holding the underlying data source
+constant:
+
+> Δ*X*(VAR) = VAR₁ − VAR₀
+
+Where VAR₀ is the baseline value at geography A, and VAR₁ is the post-transformation value.
+
+Δ*X*(VAR) does not imply which representation is correct, nor that zero delta is inherently
+desirable. It states only that the variable is not invariant under this transformation. A Δ*X* of
+zero indicates that the variable survived transformation unchanged. A non-zero Δ*X* indicates
+perturbation. The magnitude and direction of that perturbation are empirical questions, not
+theoretical ideals.
+
+---
+
+## The Hennepin County Demonstration
+
+Using Hennepin County, Minnesota (FIPS 27053) as the demonstration case, baseline data were
+drawn from the 2022 ACS 5-year estimates at the ZCTA level (n = 74, variable B01001_001,
+total population). The transformation pipeline followed two hops:
+
+**Hop 1 — ZCTA → ZIP.** The first hop increased spatial units by 32.4%, from 74 ZCTAs to 98
+ZIP codes, prior to any allocation or weighting. Some ZCTAs mapped to multiple ZIP codes:
+ZCTA 55401 was associated with 8 ZIP codes, ZCTA 55402 with 6. This pre-allocation expansion
+is the first measurable consequence of the transformation — the analytical surface has already
+shifted before a single weight is applied.
+
+**Hop 2 — ZIP → County.** Applying HUD TOT_RATIO weighting, the recovered value for
+Hennepin County was 1,216,874 against a baseline of 1,391,557.
+
+> Δ*X*(population) = −174,683 (−12.6%)
+
+The 174,683 units not retained within Hennepin County were redistributed to adjacent counties
+according to the HUD crosswalk weights. This perturbation is a property of the transformation
+structure, not the data being transformed. The same pipeline applied to median household
+income, total housing units, or households by vehicles available yields perturbation driven by
+the same allocation mechanics, though magnitude varies by the distributional properties of the
+variable.
+
+---
+
+## Why This Is Agnostic
+
+The shell game occurs regardless of which variable is being analyzed, which tool is used to run
+the workflow, or which geography is selected. Population, median income, vehicle ownership —
+same percentage error structure. R, Python, Stata, ArcGIS — same result. Hennepin County or
+any other — same pattern.
+
+The transformation is the cause. Not the tool. Not the variable.
+
+A crosswalk designed for population allocation may be inappropriate for income, employment,
+or housing variables, yet analysts routinely apply the same crosswalk across diverse analytic
+contexts. The choice of crosswalk is not a technical detail that can be deferred — it is a
+methodological decision that determines what the output actually represents.
+
+---
+
+## Auditing the Audit
+
+The framework was tested against a second crosswalk to verify that it reports honestly in both
+directions. Applying an IPUMS NHGIS block-to-tract crosswalk to Census Tract 1016, Hennepin
+County, using ACS 2019–2023 block group data returned:
+
+> Δ*X*(population) = 0 (0.0%)
+
+Three block groups intersect Tract 1016. Each maps entirely into the tract — no fragmentation,
+no spillover across boundaries. Every block in every block group allocated at weight 1.0. The
+variable survived the transformation unchanged.
+
+This result is worth being precise about. A zero Δ*X* does not mean the crosswalk is correct,
+or that the allocation assumptions have been externally validated, or that NHGIS resolves the
+problem this framework describes. What it means is that for this geography, this crosswalk, and
+this variable, the transformation introduced no perturbation. The boundary geometry and the
+crosswalk logic happened to be well-matched.
+
+IPUMS NHGIS applies its allocation logic rigorously and documents it carefully. That internal
+consistency is genuinely valuable. It is not the same as epistemic completeness. The
+assumptions are better labeled, not absent. A well-documented crosswalk that is mismatched
+to the analytic context will still perturb the variable. The audit framework does not adjudicate
+which crosswalk is appropriate — it measures what any given crosswalk actually does.
+
+The zero result demonstrates three things: the math is correct, crosswalk fit to geography
+determines the outcome, and the framework reports honestly when the answer is zero.
+
+For the full script and results, see
+`vignette("audit_the_audit", package = "geoDeltaAudit")`.
+
+---
+
+## What These Packages Do
+
+`shellgame` formalizes the conceptual framework and audit protocol for documenting crosswalk
+assumptions and evaluating how allocation alters the analytic sample. `geoDeltaAudit`
+operationalizes that framework, quantifying Δ*X*(VAR) across allocation steps and making
+crosswalk-induced sample change measurable.
+
+Geographic crosswalks should be treated as allocation procedures. The outputs they produce
+are conditional on the assumptions they encode. `shellgame` and `geoDeltaAudit` make those
+assumptions visible, so that analysts can document how crosswalk choices shape the results
+used for funding, resource allocation, and policy implementation.
+
+For the full worked example, see `vignette("audit_walkthrough", package = "geoDeltaAudit")`.

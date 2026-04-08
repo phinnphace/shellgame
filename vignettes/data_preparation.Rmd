@@ -1,0 +1,302 @@
+---
+title: "Data Preparation"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Data Preparation}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment  = "#>",
+  eval     = FALSE
+)
+```
+
+## Overview
+
+Running a transformation audit requires three inputs. This vignette walks through
+retrieving and cleaning each one so that joins work and the audit pipeline runs without
+modification.
+
+The three inputs are:
+
+1. **Baseline data** — your analytic variable at the ZCTA level, retrieved from the
+   Census ACS via `tidycensus`
+2. **ZIP–ZCTA association table** — linking ZCTAs to their constituent ZIP codes,
+   from the UDS Mapper crosswalk
+3. **HUD ZIP–County crosswalk** — allocation ratios for ZIP-to-county redistribution,
+   from HUD User
+
+A note on column headers: the Census API, UDS Mapper, and HUD all deliver files with
+different column naming conventions, inconsistent capitalization, and unsuffixed numeric
+IDs that will silently fail on a join. The cleaning steps below are not optional. Every
+join in the audit pipeline matches on specific standardized column names. If your columns
+do not match, the join returns an empty table and the audit produces no output — with no
+error to tell you why.
+
+All code blocks are `eval = FALSE`. Replace the placeholders in capital letters with
+your own values.
+
+---
+
+## 1. Census API Key
+
+A free Census API key is required for ACS data retrieval via `tidycensus`. This is a
+one-time setup per machine.
+
+```{r api-key}
+# Register at: https://api.census.gov/data/key_signup.html
+# Then run this once — it writes the key to your .Renviron
+tidycensus::census_api_key("YOUR_KEY_HERE", install = TRUE)
+
+# Restart R after running the above, then verify:
+Sys.getenv("CENSUS_API_KEY")
+```
+
+---
+
+## 2. Identify ZCTAs for Your County
+
+The `zctaCrosswalk` package retrieves the ZCTAs associated with a target county using
+the Census relationship file. This is the relationship-based membership definition —
+the same ZCTA set used in ACS tabulations, and the correct baseline for the audit.
+
+```{r zctas}
+library(zctaCrosswalk)
+
+# --- swap for your target county FIPS code ---
+zctas <- get_zctas_by_county("27053")  # Hennepin County, MN
+```
+
+This is Decision Point 1 in the audit framework. Using geometric intersection instead of the
+relationship file will change your baseline ZCTA count before any crosswalk is applied.
+For Hennepin County, that difference is 20 ZCTAs — a 27% shift in the baseline prior
+to any transformation. The audit measures perturbation from a fixed baseline; the
+baseline definition is therefore a methodological choice, not a default.
+
+---
+
+## 3. Get Baseline ACS Data
+
+```{r baseline}
+library(shellgame)
+library(tidycensus)
+library(dplyr)
+library(stringr)
+library(janitor)
+
+# --- swap variable code and year for your own ---
+baseline_raw <- tidycensus::get_acs(
+  geography = "zcta",
+  variables = "B01001_001",  # total population; swap for any ACS variable
+  year      = 2022,
+  survey    = "acs5"
+)
+
+# Other commonly used variables:
+# B19013_001 - Median household income
+# B25001_001 - Total housing units
+# B08201_001 - Households by vehicles available
+```
+
+### Clean the ACS output
+
+The Census API returns a `GEOID` column containing the full ZCTA identifier with a
+`"ZCTA5 "` prefix (e.g., `"ZCTA5 55401"`). The audit pipeline expects a plain 5-digit
+`zcta` column. It also returns `estimate` and `moe` columns — keep only what you need.
+
+```{r clean-baseline}
+baseline_data <- baseline_raw |>
+  janitor::clean_names() |>
+  dplyr::filter(geoid %in% zctas) |>           # filter to your county's ZCTAs
+  dplyr::mutate(
+    zcta = stringr::str_pad(
+      stringr::str_remove(geoid, "^ZCTA5 "),   # strip the prefix
+      width = 5, pad = "0"                      # ensure zero-padded to 5 digits
+    )
+  ) |>
+  dplyr::select(zcta, estimate)                 # keep only what the audit needs
+```
+
+**What can go wrong here:**
+
+- If `geoid` still has the `"ZCTA5 "` prefix when you join, every match fails silently
+- If `zcta` is stored as numeric rather than character, leading zeros are dropped and
+  joins on ZCTAs beginning with `0` fail
+- If you skip the `filter()`, your baseline will include ZCTAs outside your target
+  county and inflate the baseline total
+
+---
+
+## 4. Prepare the ZIP–ZCTA Association Table
+
+Download the UDS Mapper ZIP-to-ZCTA crosswalk from:
+<https://www.udsmapper.org/zip-code-to-zcta-crosswalk/>
+
+The file downloads as an Excel workbook. Export the relevant sheet to CSV before reading
+it into R, or use `readxl::read_excel()` directly.
+
+```{r zip-zcta}
+library(readr)
+
+# --- swap file path for your downloaded crosswalk ---
+zip_zcta_raw <- readr::read_csv("path/to/ZiptoZCTA.csv", show_col_types = FALSE)
+```
+
+### Clean the ZIP–ZCTA crosswalk
+
+The UDS Mapper file delivers columns named `ZIP_CODE` and `ZCTA` in all caps. The audit
+pipeline expects lowercase `zip` and `zcta`. Both must be character class and
+zero-padded to 5 digits.
+
+```{r clean-zip-zcta}
+zip_zcta <- zip_zcta_raw |>
+  janitor::clean_names() |>                     # lowercases all column names
+  dplyr::rename(
+    zip  = zip_code,                            # check names(zip_zcta_raw) first
+    zcta = zcta
+  ) |>
+  dplyr::mutate(
+    zip  = stringr::str_pad(as.character(zip),  5, pad = "0"),
+    zcta = stringr::str_pad(as.character(zcta), 5, pad = "0")
+  ) |>
+  dplyr::distinct() |>
+  dplyr::filter(!is.na(zip), !is.na(zcta))
+```
+
+**What can go wrong here:**
+
+- `ZIP_CODE` imported as numeric drops leading zeros on ZIPs beginning with `0`
+  (New England, parts of the Mid-Atlantic) — joins will fail for those ZIPs
+- Column names vary slightly across UDS Mapper vintages; run `names(zip_zcta_raw)`
+  before assuming `zip_code` is the right name
+- Duplicate rows are common and will inflate join results if not removed with
+  `distinct()`
+
+**Expected output structure:**
+
+| Column | Type | Example |
+|--------|------|---------|
+| `zip`  | character | `"55401"` |
+| `zcta` | character | `"55401"` |
+
+---
+
+## 5. Prepare the HUD ZIP–County Crosswalk
+
+The HUD USPS ZIP–County crosswalk is derived from quarterly USPS vacancy data, which
+records the distribution of business and residential mailing addresses across ZIP codes.
+It is widely used in applied population and housing research because it provides
+national coverage and allocates directly at the ZIP level. The `TOT_RATIO` field
+represents the proportion of total addresses within a ZIP code associated with each
+county.
+
+HUD crosswalk files are directional and not invertible. The ZIP→County file allocates
+from ZIP to county. It cannot be reversed — a separate County→ZIP file exists for the
+opposite direction and the two cannot be used interchangeably. Select **ZIP to County**
+when downloading.
+
+Download from: <https://www.huduser.gov/portal/datasets/usps_crosswalk.html>
+
+Select **ZIP to County** and the most recent available quarter.
+
+```{r hud}
+# --- swap file path for your downloaded crosswalk ---
+hud_raw <- readr::read_csv("path/to/ZIP_COUNTY.csv", show_col_types = FALSE)
+```
+
+### Clean the HUD crosswalk
+
+HUD delivers columns in all caps: `ZIP`, `COUNTY`, `TOT_RATIO`, `RES_RATIO`, etc.
+The `COUNTY` column is a 5-digit FIPS code but is frequently imported as numeric,
+dropping the leading zero for counties in states with FIPS codes beginning with `0`.
+
+```{r clean-hud}
+hud <- hud_raw |>
+  janitor::clean_names() |>                     # lowercases all column names
+  dplyr::mutate(
+    zip    = stringr::str_pad(as.character(zip),    5, pad = "0"),
+    county = stringr::str_pad(as.character(county), 5, pad = "0")
+  ) |>
+  dplyr::filter(!is.na(tot_ratio), tot_ratio > 0) |>
+  dplyr::distinct()
+```
+
+### Choosing an allocation ratio — this is Decision Point 2
+
+| Ratio | Description | Assumes |
+|-------|-------------|---------|
+| `tot_ratio` | Total addresses (default) | Total address count proxies variable distribution |
+| `res_ratio` | Residential addresses only | Residential addresses are more appropriate proxy |
+| `bus_ratio` | Business addresses | Business addresses are more appropriate proxy |
+| `oth_ratio` | Other addresses | Other address types are more appropriate proxy |
+
+Decision Point 2: Crosswalk Selection. Analysts must select among allocation ratios. Each
+allocation ratio enacts a different set of assumptions on the underlying population.
+The analyst who selects `tot_ratio` assumes that total addresses are a proxy for
+population distribution; the analyst who selects `res_ratio` assumes residential
+addresses are more appropriate. These are not technical details — they are
+methodological choices that affect results.
+
+To use a ratio other than `tot_ratio`, retain the desired column and rename it
+accordingly before passing to `geoDeltaAudit`.
+
+**What can go wrong here:**
+
+- `county` imported as numeric drops the leading zero for states with FIPS `< 10000`
+  (Alabama, Alaska, Arizona, Arkansas, California, Colorado, Connecticut) — every
+  county-level join fails for those states
+- Rows with `tot_ratio == 0` exist in the HUD file and should be filtered before use;
+  they represent ZIP codes with no address activity in that county
+- HUD column names are consistent across quarters but the filename changes with each
+  release — check `names(hud_raw)` if `clean_names()` produces unexpected results
+
+**Expected output structure:**
+
+| Column | Type | Example |
+|--------|------|---------|
+| `zip` | character | `"55401"` |
+| `county` | character | `"27053"` |
+| `tot_ratio` | numeric | `0.843` |
+
+---
+
+## 6. Verify Before Handing Off
+
+Run these checks before passing data to `geoDeltaAudit`. They take thirty seconds and
+will prevent hours of debugging a silent empty-join result.
+
+```{r verify}
+# All ID columns should be character class, 5 digits, no NAs
+stopifnot(is.character(baseline_data$zcta))
+stopifnot(all(nchar(baseline_data$zcta) == 5))
+stopifnot(!any(is.na(baseline_data$zcta)))
+
+stopifnot(is.character(zip_zcta$zip))
+stopifnot(is.character(zip_zcta$zcta))
+
+stopifnot(is.character(hud$zip))
+stopifnot(is.character(hud$county))
+
+# ZCTAs in baseline should match ZCTAs in association table
+matched <- sum(baseline_data$zcta %in% zip_zcta$zcta)
+cat("ZCTAs matched to association table:", matched, "of", nrow(baseline_data), "\n")
+```
+
+If `matched` is zero, the join will produce an empty result. Go back and check padding
+and class on both sides before proceeding.
+
+---
+
+## Next Steps
+
+Once all three inputs are cleaned and verified, pass them to `geoDeltaAudit` to run
+the audit:
+
+- `vignette("audit_walkthrough", package = "geoDeltaAudit")` — step-by-step execution
+  with copy-paste swappable chunks
+- `vignette("conceptual_framework", package = "shellgame")` — what the audit measures
+  and why crosswalk decisions matter

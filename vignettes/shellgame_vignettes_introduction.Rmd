@@ -1,0 +1,91 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  echo    = TRUE,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+## What This Package Does
+
+The `shellgame` conceptual framework and `geoDeltaAudit` R packages serve as an audit
+for researchers to quantify the transformation-induced perturbation (Δ*X*). Perturbation
+is measured using the `geoDeltaAudit` engine, which quantifies changes in the underlying
+sample induced by geographic allocation.
+
+Geographic crosswalking is commonplace in population data workflows. It is often
+described as harmonization. It is not. It is allocation.
+
+An observed quantity — population, cases, funding, rates — measured within boundary A
+is redistributed into boundary B using a weighting rule. That redistribution is a
+model. It encodes assumptions about proportionality, spatial distribution, and
+membership. It is not a new observation. The failure occurs when allocated outputs are
+treated as direct measurements.
+
+That is the shell game.
+
+---
+
+## What You Need
+
+Three inputs are required to run an audit:
+
+1. **Baseline data** — your analytic variable at your source geography
+2. **Association table** — linking source geographic units to intermediate units
+3. **Crosswalk** — allocation ratios mapping intermediate units to your target geography
+
+If you want to follow the same path taken here — the data sources used, how they were
+retrieved, and how they were cleaned — that walkthrough is available in
+`vignette("data_preparation", package = "shellgame")`.
+
+---
+
+## Two Decision Points the Audit Makes Visible
+
+Every crosswalk workflow encodes at least two decisions that are typically left implicit.
+This package makes them explicit.
+
+**Decision Point 1: Membership Definition.** Analysts must choose whether to define
+geographic membership by administrative linkage (relationship-based, as used in Census
+tabulations) or by geometric contact (spatial intersection).
+
+**Decision Point 2: Crosswalk Selection.** Analysts must select among allocation ratios,
+otherwise known as "crosswalks." Crosswalks apply allocation ratios to geography. In
+plain language, crosswalks take a set of assumptions about where people are — 30% live
+over there — and apply them regardless of actuality. Because the assumption is
+consistent it is measurable, and most importantly it allows us to measure our data
+against theirs.
+
+If that sounds off or a bit absurd, you are not alone. In fact, welcome.
+
+---
+
+## Implementation
+
+The `geoDeltaAudit` package (v0.1.0) implements the `shellgame` framework in R
+(>= 4.0.0), depending on the tidyverse ecosystem (`dplyr`, `tidyr`, `stringr`) and
+`tidycensus` for Census data access. The transformation pipeline consists of sequential
+"hops," with perturbation recorded at each step.
+
+---
+
+## Next Steps
+
+- `vignette("conceptual_framework", package = "shellgame")` — the full framework on why
+  crosswalk decisions matter, what perturbation means, why it matters, and how we can
+  make a meaningful difference with a few small changes in how we work
+- `vignette("data_preparation", package = "shellgame")` — follow the path taken here:
+  data sources, retrieval, and cleaning
+- `vignette("audit_walkthrough", package = "geoDeltaAudit")` — step-by-step walkthrough
+  with copy-paste swappable chunks
+- `vignette("audit_the_audit", package = "geoDeltaAudit")` — the same framework applied
+  to an IPUMS NHGIS crosswalk; Δ*X* = 0
