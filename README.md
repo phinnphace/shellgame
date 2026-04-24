@@ -88,7 +88,7 @@ Markson, P. (2026). shellgame: The Shell Game - Audit Geographic Data
 ```
 
 ## Inspiration
-
+https://doi.org/10.5281/zenodo.18634426
 Package structure inspired by the excellent [`areal`](https://chris-prener.github.io/areal/) package by Christopher Prener.
 
 ## License
