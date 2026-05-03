@@ -17,7 +17,10 @@ get_zcta_baseline(variable, year = 2022, zctas = NULL)
 Data frame with columns: zcta, estimate, moe
 }
 \description{
-Fetches ACS 5-year estimates for specified variable and ZCTAs.
+Fetches ACS 5-year estimates for a specified variable at the ZCTA level using
+the Census API via the tidycensus package. Requires a Census API key
+(see \url{https://api.census.gov/data/key_signup.html}) and the tidycensus
+package to be installed.
 }
 \examples{
 \dontrun{

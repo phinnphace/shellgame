@@ -83,7 +83,10 @@ prep_hud_crosswalk <- function(data, ratio_col = "TOT_RATIO") {
 
 #' Get ACS baseline data for ZCTAs
 #'
-#' Fetches ACS 5-year estimates for specified variable and ZCTAs.
+#' Fetches ACS 5-year estimates for a specified variable at the ZCTA level using
+#' the Census API via the tidycensus package. Requires a Census API key
+#' (see \url{https://api.census.gov/data/key_signup.html}) and the tidycensus
+#' package to be installed.
 #'
 #' @param variable ACS variable code (e.g., "B01001_001" for total population)
 #' @param year ACS year (default: 2022)
@@ -99,8 +102,16 @@ prep_hud_crosswalk <- function(data, ratio_col = "TOT_RATIO") {
 #' hennepin_zctas <- c("55401", "55402", "55403")
 #' pop_data <- get_zcta_baseline("B01001_001", zctas = hennepin_zctas)
 #' }
+
 get_zcta_baseline <- function(variable, year = 2022, zctas = NULL) {
-    check_census_key()
+  if (!requireNamespace("tidycensus", quietly = TRUE)) {
+    stop(
+      "Package 'tidycensus' is required for get_zcta_baseline(). ",
+      "Install it with: install.packages('tidycensus')",
+      call. = FALSE
+    )
+  }
+  check_census_key()
 
     # Fetch data from Census API
     acs_raw <- tidycensus::get_acs(

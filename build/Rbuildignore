@@ -1,0 +1,12 @@
+^\.git$
+^\.gitignore$
+^doc$
+^Meta$
+^build$
+^\:docs$
+^figures$
+^README\.Rmd$
+^\.github$
+^vignettes/.*\.R$
+^cran-comments\.md$
+^NEWS\.md$
