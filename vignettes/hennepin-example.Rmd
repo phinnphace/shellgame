@@ -86,7 +86,7 @@ result <- shellgame::evaluate_transformation(
 
 ```{r eval=FALSE}
 # Print summary
-summary(out)
+summary(result)
 ```
 ## Membership Visualization
 
@@ -232,4 +232,4 @@ This error is **agnostic** to:
 - Document your hidden decisions
 
 See `vignette("data-preparation")` for how to prepare your own data.
-See `vignette("understanding-shell-game")` for the conceptual explanation.
+See `vignette("conceptual_framework-shell-game")` for the conceptual explanation.
