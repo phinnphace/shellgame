@@ -1,9 +1,7 @@
 # Global variables used in NSE contexts
 utils::globalVariables(c("ZCTA5CE10", "stage", "value", "type"))
-
 #' @importFrom magrittr %>%
 NULL
-
 #' Plot baseline ZCTAs
 #'
 #' Creates a map showing the baseline ZCTAs used in the analysis.
@@ -44,11 +42,9 @@ plot_baseline_zctas <- function(zcta_sf, county_sf,
 plot_geometric_vs_relationship <- function(zcta_baseline_sf, zcta_geometric_sf,
                                            county_sf,
                                            title = "Geometric vs Relationship Membership") {
-    # Find ZCTAs that are geometric-only (not in baseline)
     baseline_ids <- zcta_baseline_sf$ZCTA5CE10
     extra_zctas <- zcta_geometric_sf %>%
         dplyr::filter(!(ZCTA5CE10 %in% baseline_ids))
-
     ggplot2::ggplot() +
         ggplot2::geom_sf(data = zcta_baseline_sf, fill = NA, linewidth = 0.25) +
         ggplot2::geom_sf(data = extra_zctas, fill = "grey60", linewidth = 0.25) +
@@ -72,20 +68,19 @@ plot_geometric_vs_relationship <- function(zcta_baseline_sf, zcta_geometric_sf,
         )
 }
 
-#' Plot transformation loss
+#' Plot transformation perturbation
 #'
 #' Creates a simple bar chart showing baseline vs recovered values.
 #'
 #' @param audit_result A shellgame_audit object
 #' @return A ggplot2 object
 #' @export
-plot_transformation_loss <- function(audit_result) {
+plot_transformation_perturbation <- function(audit_result) {
     plot_data <- data.frame(
-        stage = c("Baseline\\n(Observed)", "After Transformation\\n(Imputed)"),
+        stage = c("Baseline\n(Observed)", "After Transformation\n(Imputed)"),
         value = c(audit_result$baseline_total, audit_result$recovered_total),
         type = c("Observed", "Imputed")
     )
-
     ggplot2::ggplot(plot_data, ggplot2::aes(x = stage, y = value, fill = type)) +
         ggplot2::geom_col() +
         ggplot2::geom_text(
@@ -99,10 +94,10 @@ plot_transformation_loss <- function(audit_result) {
         ggplot2::labs(
             title = "The Shell Game",
             subtitle = sprintf(
-                "%s: Loss of %s (%.1f%%)",
+                "%s: Perturbation of %s (%.1f%%)",
                 audit_result$variable_name,
-                format(round(abs(audit_result$absolute_loss)), big.mark = ","),
-                abs(audit_result$percent_loss)
+                format(round(abs(audit_result$absolute_perturbation)), big.mark = ","),
+                abs(audit_result$percent_perturbation)
             ),
             x = NULL,
             y = audit_result$variable_name,
@@ -131,21 +126,16 @@ plot_transformation_loss <- function(audit_result) {
 create_audit_report <- function(audit_result, zcta_baseline_sf = NULL,
                                 zcta_geometric_sf = NULL, county_sf = NULL) {
     plots <- list()
-
-    # Always create the loss plot
-    plots$loss <- plot_transformation_loss(audit_result)
-
+    # Always create the perturbation plot
+    plots$perturbation <- plot_transformation_perturbation(audit_result)
     # Create spatial plots if geometries provided
     if (!is.null(zcta_baseline_sf) && !is.null(county_sf)) {
         plots$baseline <- plot_baseline_zctas(zcta_baseline_sf, county_sf)
     }
-
     if (!is.null(zcta_baseline_sf) && !is.null(zcta_geometric_sf) && !is.null(county_sf)) {
         plots$membership <- plot_geometric_vs_relationship(
             zcta_baseline_sf, zcta_geometric_sf, county_sf
         )
     }
-
     plots
 }
-

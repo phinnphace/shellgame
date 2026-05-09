@@ -63,7 +63,7 @@ baseline_data <- get_zcta_baseline(
 
 # 4. Get ZIP-ZCTA Crosswalk
 
-Download from: https://www.udsmapper.org/zip-code-to-zcta-crosswalk/
+ # https://github.com/chris-prener/uds-mapper
 
 ```{r eval=FALSE}
 # Read the file

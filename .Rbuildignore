@@ -2,3 +2,6 @@
 ^Meta$
 ^.*\.Rproj$
 ^\.Rproj\.user$
+^dev$
+^\\.github$
+^\.github$
