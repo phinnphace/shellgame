@@ -47,7 +47,7 @@ This is how the distortion compounds.
 
 Assumptions are sticky. They don't decay; they **accumulate**.
 
-When you apply standard administrative crosswalks in succession, each step replicates population using residential address distributions as a proxy. The resulting estimates retain the population label despite no longer representing directly observed population quantities. As a result, successive users inherit increasingly imputed values while treating them as empirical measurements.
+When you apply standard administrative crosswalks in succession, each step amplifies the prior steps assumptions, and allocation choices. And, adds its own. In this example case study, shellgame is using HUD and TOT_RATIO, which assumes and allocates, residential address distributions as a proxy for population. The resulting estimates retain the population label despite no longer representing directly observed population quantities. As a result, successive users inherit increasingly imputed values while treating them as empirical measurements.
 
 ## The Transformation Chain
 
@@ -78,7 +78,7 @@ At this stage, we:
 
 Any downstream "fix" is compensating for **damage already done**, not refining a neutral process.
 
-## First Defensible Claim
+## First Claim
 
 We can already say, truthfully and precisely:
 
@@ -112,8 +112,8 @@ For Hennepin County, Minnesota:
 
 **Input**: Population at ZCTA level  
 **Transformation**: ZCTA → ZIP → County  
-**Output**: Population at County level  
-**Result**: Δ(Population) = Baseline - Recovered
+**Output**: Population at each level  
+**Result**: delta(Population) = Baseline - Recovered
 
 - **Baseline**: 1,391,557 (74 ZCTAs, directly observed from ACS)
 - **After ZCTA→ZIP→County**: 1,216,874 (recovered via HUD TOT_RATIO)
@@ -138,7 +138,7 @@ The shell game happens regardless of who's shuffling the shells.
 1. **Quantify** the error at each transformation hop
 2. **Reveal** where the swap from observed to imputed data occurs
 3. **Demonstrate** that the error is agnostic to inputs
-4. **Document** the hidden decisions in your workflow
+4. **Document** the hidden decisions in the workflow
 
 Use it to audit yourself. Use it to understand what's really happening when you transform geographic data.
 

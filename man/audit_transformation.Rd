@@ -31,7 +31,7 @@ An object of class "shellgame_audit" with audit results
 }
 \description{
 Main function to audit a complete geographic transformation pipeline.
-Quantifies the error introduced at each hop and reveals the shell game.
+Quantifies the perturbation introduced at each hop and reveals the shell game.
 }
 \examples{
 \dontrun{

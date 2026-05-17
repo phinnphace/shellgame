@@ -41,6 +41,7 @@ check_census_key <- function(install = FALSE) {
 #' @param data_name Name of the data object (for error messages)
 #' @return Invisible TRUE if valid, stops with error if not
 #' @keywords internal
+#' @noRd 
 validate_columns <- function(data, required_cols, data_name = "data") {
     missing_cols <- setdiff(required_cols, names(data))
 
