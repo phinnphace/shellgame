@@ -14,6 +14,9 @@ authors:
   - name: Krishna Chaitanya Rao Kathala
     orcid: 0009-0004-7708-561X
     affiliation: 1
+      - name: Brad Coy
+    orcid: 0000-XXXX-XXXX-XXXX
+    affiliation: 1
 affiliations:
  - name: Translational Data Analytics Institute, The Ohio State University, Columbus, OH, USA
    index: 1
