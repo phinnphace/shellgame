@@ -15,7 +15,6 @@ authors:
     orcid: 0009-0004-7708-561X
     affiliation: 1
   - name: Brad Coy
-    orcid: 0000-XXXX-XXXX-XXXX
     affiliation: 1
 affiliations:
  - name: Translational Data Analytics Institute, The Ohio State University, Columbus, OH, USA
@@ -130,13 +129,13 @@ We present shellgame through a worked case study in Hennepin County, Minnesota (
 
 # 4. Results
 
-![Figure 1: Map of Hennepin County showing how fan out occurs from the relationship choice. The analyst selecting geometry, as is shown here (opaque grey polygons) represent ZCTA’s that appear only under geometric intersection and are not included in the relationship-based baseline. The geometric choice balloons the underlying unit quantity without any analysis or mathematical interventions.](figures/hennepin_membership_labeled.png)
+![ Map of Hennepin County showing how fan out occurs from the relationship choice. The analyst selecting geometry, as is shown here (opaque grey polygons) represent ZCTA’s that appear only under geometric intersection and are not included in the relationship-based baseline. The geometric choice balloons the underlying unit quantity without any analysis or mathematical interventions.](figures/hennepin_membership_labeled.png)
 
 ## 4.1 Pre-Allocation Expansion
 
 The first transformation hop (ZCTA to ZIP) increased the number of units representing Hennepin County by 32.4%, from 74 ZCTAs to 98 ZIP codes. This expansion occurred prior to any allocation or weighting, simply by associating ZCTAs with their constituent ZIP codes. Some ZCTAs were mapped to multiple ZIP codes; for example, ZCTA 55401 was associated with eight ZIP codes, and ZCTA 55402 with six ZIP codes.
 
-![Figure 2: Flowchart of the administrative hops by analyst choice.](figures/flowchart.png)
+![Flowchart of the administrative hops by analyst choice.](figures/flowchart.png)
 
 This pre-allocation expansion represents a fundamental shift in the analytical surface. The researcher is no longer working with the 74 statistical units defined by the Census Bureau for ACS tabulation; they are working with 98 postal units defined by the U.S. Postal Service.
 
@@ -199,13 +198,13 @@ The NHGIS validation audit produced a different kind of result. For 2020 tract 2
 | blocks_total | 54 | Fifty-four unique 2010 blocks contribute to the 2020 tract. |
 | pct_blocks_matched | 100% | No silent drops or missing joins were detected. |
 
-This is the best possible case for the audit: complete source coverage, complete joins, and minimal fragmentation. The validation therefore supports the implementation rather than invalidating the conceptual concern. When the NHGIS/IPUMS procedure is followed exactly, the resulting estimate is internally stable. In the notation of S3.2, this case approximates ΔX = 0: the recovered value equals the contributing baseline. Yet the output remains an allocated estimate in 2020 tract geometry rather than a direct 2010 observation — zero perturbation is not zero transformation; It remains, however, an allocated estimate in 2020 tract geometry rather than a direct 2010 observation made under that geometry. The important distinction is not accuracy versus inaccuracy. It is transparency versus unexamined transformation.
+This is the best possible case for the audit: complete source coverage, complete joins, and minimal fragmentation. The validation therefore supports the implementation rather than invalidating the conceptual concern. When the NHGIS/IPUMS procedure is followed exactly, the resulting estimate is internally stable. In the notation of Section 3.1, this case approximates ΔX = 0: the recovered value equals the contributing baseline. Yet the output remains an allocated estimate in 2020 tract geometry rather than a direct 2010 observation — zero perturbation is not zero transformation. It remains, however, an allocated estimate in 2020 tract geometry rather than a direct 2010 observation made under that geometry. The important distinction is not accuracy versus inaccuracy. It is transparency versus unexamined transformation.
 
 ## 5.2 The Conceptual Distinction: Allocated Estimates vs. Direct Observations
 
 While the execution went smoothly, interpreting the meaning of this “success” requires careful epistemological framing.
 
-When the NHGIS interpolation procedure is followed, the resulting output is internally coherent and stable. Specifically, the right data, at the right time, with the right resources happened to produce the “right” results. This speaks to several underlying mechanisms. The availability of data, the NHGIS methodology, shellgame, and my ability to follow directions/NHGIS’s ability to convey them. All this and more are true in this context. A successful crosswalk operation does not equate to recovering the absolute ground truth. The final tally of 2,437 remains, an allocated estimate projected into 2020 tract geometry rather than a direct, unmediated 2010 observation recorded under the exact geometry.
+When the NHGIS interpolation procedure is followed, the resulting output is internally coherent and stable. Specifically, the right data, at the right time, with the right resources happened to produce the “right” results. This speaks to several underlying mechanisms. The availability of data, the NHGIS methodology, shellgame, and my ability to follow directions/NHGIS’s ability to convey them. All this and more are true in this context. A successful crosswalk operation does not equate to recovering the absolute ground truth. The final tally of 2,437 remains an allocated estimate projected into 2020 tract geometry rather than a direct, unmediated 2010 observation recorded under the exact geometry.
 
 In this highly controlled setting, the distinction between source measurement and specific-geometry estimate cannot be dismissed as a coding error or software failure. Instead, this distinction is highlighted to be an innate property of the allocation process itself. Regardless of how pristine the interpolation weights are, the data are still transformed. The crucial takeaway is not a binary debate between accuracy and inaccuracy but the paramount necessity of transparency over unexamined transformation [@Kar2023].
 
