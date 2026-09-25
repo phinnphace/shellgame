@@ -21,7 +21,7 @@ Standardizes ZIP-ZCTA crosswalk data with proper column names and formatting.
 }
 \examples{
 \dontrun{
-zip_zcta_raw <- read.csv("ZiptoZCTA-Table 1.csv")
+zip_zcta_raw <- read.csv("ZiptoZCTA_Table_1.csv")
 zip_zcta <- prep_zip_zcta(zip_zcta_raw)
 }
 }

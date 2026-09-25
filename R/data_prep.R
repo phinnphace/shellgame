@@ -9,7 +9,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' zip_zcta_raw <- read.csv("ZiptoZCTA-Table 1.csv")
+#' zip_zcta_raw <- read.csv("ZiptoZCTA_Table_1.csv")
 #' zip_zcta <- prep_zip_zcta(zip_zcta_raw)
 #' }
 prep_zip_zcta <- function(data, zip_col = NULL, zcta_col = "zcta") {

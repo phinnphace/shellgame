@@ -19,8 +19,8 @@ knitr::opts_chunk$set(
 # }
 
 ## ----eval=FALSE---------------------------------------------------------------
-# acs_path  <- system.file("extdata", "toy_acs_zcta_hennepin.csv", package = "geoDeltaAudit")
-# hud_path  <- system.file("extdata", "toy_zip_county_hud_hennepin.csv", package = "geoDeltaAudit")
+# acs_path  <- system.file("extdata", "toy_acs_zcta_hennepin.csv", package = "shellgame")
+# hud_path  <- system.file("extdata", "toy_zip_county_hud_hennepin.csv", package = "shellgame")
 # 
 # stopifnot(nchar(acs_path) > 0, nchar(hud_path) > 0)
 # 

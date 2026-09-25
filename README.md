@@ -1,4 +1,4 @@
-# shellgame <img src="man/figures/logo.png" align="right" height="139" />
+# shellgame
 
 [![CRAN status](https://www.r-pkg.org/badges/version/shellgame)](https://CRAN.R-project.org/package=shellgame)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.18634426.svg)](https://doi.org/10.5281/zenodo.18634426)
